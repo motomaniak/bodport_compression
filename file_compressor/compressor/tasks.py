@@ -13,7 +13,7 @@ def compress_file(file_path):
     path, file = os.path.split(file_path)
     file_name, ext = os.path.splitext(file)
     file_size = os.path.getsize(file_path)
-    zip_file = f"{file_name}_compressed.bin"
+    zip_file = f"{file_name}.xz"
     zip_file_path = f"{settings.MEDIA_URL}files/{zip_file}"
     results = {'archive_path': zip_file_path, 'file_size': file_size}
     
@@ -22,8 +22,8 @@ def compress_file(file_path):
         data = bin.read()
         # Tried lzma first and got a compression ratio of ~1.72:1 
         # then I read about zlib which is also a lossless compression and got ~1.27:1 
-        compressed_data = zlib.compress(data)
-        # f1 = lzma.open(zip_file, "wb")
+        #compressed_data = zlib.compress(data)
+        f1 = lzma.open(zip_file, "wb")
         f1 = open(zip_file, 'wb')
         f1.write(compressed_data)
         f1.close()
