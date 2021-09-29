@@ -19,7 +19,7 @@ $ python manage.py runserver
 
 Open a third terminal to start celery
 ```
-$ cd file_compressor/file_compress
+$ cd file_compressor
 $ source venv/bin/activate
 $ cd file_compressor
 $ celery -A file_compressor worker -l INFO
