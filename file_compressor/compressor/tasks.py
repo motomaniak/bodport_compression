@@ -20,12 +20,10 @@ def compress_file(file_path):
     try:
         bin = open(file_path, "rb")
         data = bin.read()
-        # Tried lzma first and got a compression ratio of ~1.72:1 
-        # then I read about zlib which is also a lossless compression and got ~1.27:1 
-        #compressed_data = zlib.compress(data)
+        
         f1 = lzma.open(zip_file, "wb")
-        #f1 = open(zip_file, 'wb')
-        f1.write(compressed_data)
+        
+        f1.write(data)
         f1.close()
         
         zip_file_size = os.path.getsize(zip_file)
