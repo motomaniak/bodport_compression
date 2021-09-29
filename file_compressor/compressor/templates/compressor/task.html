@@ -1,0 +1,119 @@
+{% load widget_tweaks %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>ECG Compressor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.5/css/bulma.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.min.js"></script>
+    <script defer src="https://use.fontawesome.com/releases/v5.0.7/js/all.js"></script>
+
+    <style>
+        @keyframes spinner {
+             0% {
+                transform: translate3d(-50%, -50%, 0) rotate(0deg);
+            }
+            100% {
+                transform: translate3d(-50%, -50%, 0) rotate(360deg);
+            }
+        }
+
+        .spin::before {
+            animation: spinner 1.5s infinite linear;
+            animation-play-state: inherit;
+            border: 5px solid #fff;
+            border-bottom-color: #1b7bb6;
+            border-radius: 50%;
+            content: "";
+            height: 40px;
+            width: 40px;
+            position: absolute;
+            top: 100px;
+            left: 50%;
+            transform: translate3d(-50%, -50%, 0);
+            will-change: transform;
+        }
+
+        a {
+            text-decoration: underline !important;
+        }
+
+        a:hover {
+            color: #0777bd !important;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar" role="navigation" aria-label="main navigation">
+        <div class="navbar-brand">
+            <a class="navbar-item" href="/">
+                ECG Compressor
+            </a>
+        </div>
+    </nav>
+    <section class="hero is-primary is-fullheight-with-navbar">
+        <div class="hero-body">
+            <div class="container">
+                <h1 class="title is-size-1 has-text-centered">ECG bin file compression</h1>
+                <p class="subtitle has-text-centered is-size-2" id="progress-title"></p>
+                <div class="columns is-centered">
+                    <div id="results_container" class="column is-8 is-centered is-hidden">
+                        <p class="has-text-centered is-size-4"> Original size of file: <span id="file_size"></span> bytes </p>
+                        <p class="has-text-centered is-size-4"> Compressed size: <span id="zip_file_size"></span> bytes</p>
+                        <p class="has-text-centered is-size-4"> Compression ratio: <span id="ratio"></span>:1 </p>
+                        <p class="has-text-centered is-size-4"><a  id='download_link' href="#">Download file</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    {% if task_id %}
+    <script>
+        var taskUrl = "{% url 'task' task_id=task_id %}";
+        var progressTitle = document.getElementById('progress-title');
+        updateProgressTitle();
+        
+        // start an interval time to check if the celery task has finished and display results
+        var timer = setInterval(function () {
+            updateProgressTitle();
+            axios.get(taskUrl)
+                .then(function (response) {
+                    var taskStatus = response.data.task_status
+                    if (taskStatus === 'SUCCESS') {
+                        clearTimer('Results');
+                        var url = window.location.protocol + '//' + window.location.host + response.data.results.archive_path;
+                        document.getElementById("file_size").innerText = response.data.results.file_size;
+                        document.getElementById("zip_file_size").innerText = response.data.results.zip_file_size;
+                        document.getElementById("ratio").innerText = response.data.results.ratio;
+                        document.getElementById("download_link").href = url;
+                        document.getElementById("results_container").classList.remove('is-hidden');
+                    } else if (taskStatus === 'FAILURE') {
+                        clearTimer('An error occurred');
+                    }
+                })
+                .catch(function (err) {
+                    console.log('err', err);
+                    clearTimer('An error occurred');
+                });
+        }, 800);
+
+        function updateProgressTitle() {
+            progressTitle.classList.add('spin');
+        }
+        
+        //Clear the timer and remove the spinner and update message
+        function clearTimer(message) {
+            clearInterval(timer);
+            progressTitle.classList.remove('spin')
+            progressTitle.innerHTML = message;
+        }
+    </script>
+    {% endif %}
+</body>
+
+</html>
