@@ -24,7 +24,7 @@ def compress_file(file_path):
         # then I read about zlib which is also a lossless compression and got ~1.27:1 
         #compressed_data = zlib.compress(data)
         f1 = lzma.open(zip_file, "wb")
-        f1 = open(zip_file, 'wb')
+        #f1 = open(zip_file, 'wb')
         f1.write(compressed_data)
         f1.close()
         
